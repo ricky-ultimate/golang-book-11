@@ -2,74 +2,49 @@ package math
 
 import "testing"
 
-type averagetestpair struct {
-	values  []float64
-	average float64
-}
-
-type mintestpair struct {
+type testpair[T any] struct {
 	values []float64
-	min    float64
+	result T
 }
 
-type maxtestpair struct {
-	values []float64
-	max    float64
-}
-
-var averagetests = []averagetestpair{
+var averagetests = []testpair[float64]{
 	{[]float64{1, 2}, 1.5},
 	{[]float64{1, 1, 1, 1, 1, 1}, 1},
 	{[]float64{-1, 1}, 0},
 }
 
-var mintest = []mintestpair{
+var mintests = []testpair[float64]{
 	{[]float64{1, 2, 3}, 1},
 	{[]float64{6, 5, 3}, 3},
 	{[]float64{10, 7, 9}, 7},
 }
 
-var maxtest = []maxtestpair{
+var maxtests = []testpair[float64]{
 	{[]float64{1, 2, 3}, 3},
 	{[]float64{6, 5, 3}, 6},
 	{[]float64{10, 7, 9}, 10},
 }
 
 func TestAverage(t *testing.T) {
-	for _, pair := range averagetests {
-		v := Average(pair.values)
-		if v != pair.average {
-			t.Error(
-				"For", pair.values,
-				"expected", pair.average,
-				"got", v,
-			)
-		}
-	}
+	runTests(t, averagetests, Average)
 }
 
 func TestMin(t *testing.T) {
-	for _, pair := range mintest {
-		v := Min(pair.values...)
-		if v != pair.min {
-			t.Error(
-				"For", pair.values,
-				"expected", pair.min,
-				"got", v,
-			)
-		}
-	}
+	runTests(t, mintests, func(values []float64) float64 {
+		return Min(values...)
+	})
 }
 
 func TestMax(t *testing.T) {
-	for _, pair := range maxtest {
-		v := Max(pair.values...)
-		if v != pair.max {
-			t.Error(
-				"For", pair.values,
-				"expected", pair.max,
-				"got", v,
-			)
+	runTests(t, maxtests, func(values []float64) float64 {
+		return Max(values...)
+	})
+}
+
+func runTests[T comparable](t *testing.T, tests []testpair[T], f func([]float64) T) {
+	for _, pair := range tests {
+		if v := f(pair.values); v != pair.result {
+			t.Errorf("For %v, expected %v, got %v", pair.values, pair.result, v)
 		}
 	}
 }
